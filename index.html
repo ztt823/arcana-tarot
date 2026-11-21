@@ -43,6 +43,12 @@ h3{margin:0 0 10px;color:var(--gold2);font-weight:normal;font-size:14px;letter-s
 #controls{position:fixed;left:22px;bottom:146px;z-index:4;display:flex;gap:7px;flex-wrap:wrap;max-width:235px}
 #help{position:fixed;z-index:3;left:50%;top:76px;transform:translateX(-50%);font:11px Arial,sans-serif;color:#bdb39f;letter-spacing:.06em;text-align:center}
 #deckCount{color:var(--gold);font:11px Arial,sans-serif;margin-top:6px}
+#questionPanel{position:fixed;z-index:5;left:22px;top:310px;width:230px;padding:14px}
+#questionInput{width:100%;min-height:72px;resize:vertical;background:#080d18;color:var(--ink);border:1px solid var(--line);border-radius:9px;padding:9px;font:12px/1.5 Arial,sans-serif;outline:none}
+#questionPanel button{margin-top:8px;width:100%}
+#readingPanel{position:fixed;z-index:6;left:50%;top:50%;transform:translate(-50%,-50%);width:min(560px,90vw);max-height:75vh;overflow:auto;padding:20px;display:none}
+#readingPanel.show{display:block}#readingPanel h3{font-size:17px}#readingBody{font:13px/1.8 Arial,sans-serif;color:#e0d8c8;white-space:pre-line}#readingClose{float:right}
+@media(max-width:700px){#questionPanel{left:10px;top:260px;width:185px;padding:10px}#questionInput{min-height:55px}#readingPanel{max-height:70vh;padding:14px}}
 #toast{position:fixed;z-index:8;left:50%;top:50%;transform:translate(-50%,-50%);background:#111827ee;border:1px solid var(--gold);padding:15px 22px;border-radius:12px;display:none;text-align:center;max-width:85vw;font:13px Arial;box-shadow:0 10px 50px #0009}
 @media(max-width:700px){#guide{top:68px;left:10px;width:185px;padding:11px}.step{font-size:10px;margin:7px 0}#meaning{right:10px;top:auto;bottom:160px;width:205px;padding:12px}#history{right:10px;bottom:10px;width:min(300px,calc(100vw - 20px));max-height:34vh}.spread-slot .slot-frame{height:86px}#controls{left:10px;bottom:132px;max-width:180px}#status{bottom:12px;font-size:10px}#help{top:12px;width:90%;font-size:9px}#cameraBox{left:10px;bottom:10px;width:110px;height:82px}}
 </style>
@@ -59,6 +65,8 @@ h3{margin:0 0 10px;color:var(--gold2);font-weight:normal;font-size:14px;letter-s
 <div class="step"><b>MOUSE</b><span>鼠标移动、点击抓取，双击确认</span></div>
 <div id="deckCount">剩余牌数：78</div></div>
 <div class="panel" id="meaning"><div id="orientation">UPRIGHT</div><div id="cardName">The Fool</div><div id="meaningText"></div></div>
+<div class="panel" id="questionPanel"><h3>你的占卜问题</h3><textarea id="questionInput" placeholder="例如：我接下来的事业发展如何？"></textarea><button id="questionSave">保存问题，开始三张牌占卜</button></div>
+<div class="panel" id="readingPanel"><button id="readingClose">关闭</button><h3>你的三张牌解读</h3><div id="readingBody"></div></div>
 <div class="panel" id="history"><h3>三张牌阵 / THREE-CARD SPREAD</h3>
 <div id="spreadProgress">已抽取 0 / 3 张</div>
 <div id="spreadSlots">
@@ -76,6 +84,7 @@ h3{margin:0 0 10px;color:var(--gold2);font-weight:normal;font-size:14px;letter-s
 <script>
 (()=>{'use strict';
 const $=id=>document.getElementById(id),status=$('status'),meaning=$('meaning'),toast=$('toast');
+let userQuestion='请为我解读近期的整体趋势。';
 const scene=new THREE.Scene();scene.fog=new THREE.FogExp2(0x0b0e18,.055);
 const camera=new THREE.PerspectiveCamera(38,innerWidth/innerHeight,.1,100);camera.position.set(0,0,12);
 const renderer=new THREE.WebGLRenderer({antialias:true,alpha:true});renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.setSize(innerWidth,innerHeight);renderer.outputColorSpace=THREE.SRGBColorSpace;$('stage').appendChild(renderer.domElement);
@@ -134,15 +143,21 @@ function confirmDraw(){
    say(`第 ${drawnCards.length} 张已确认 · 张开手掌 OPEN，继续抽第 ${drawnCards.length+1} 张`);
    setTimeout(()=>{locked=false;ready=false;},700);
  }else{
-   say('三张牌阵完成 · 过去、现在与未来已揭示');
-   $('help').textContent='三张牌已集齐 · 可查看右下角牌阵与各张牌义';
+   say('三张牌阵完成 · 正在为你整理解读');
+   $('help').textContent='三张牌已集齐 · 已生成你的问题解读';
+   showReading();
    setTimeout(()=>{locked=false;ready=false;},700);
  }
 }
 function makeAsh(group){const pos=[],sizes=[],alphas=[];const count=1300;for(let i=0;i<count;i++){const x=(Math.random()-.5)*cardW,y=(Math.random()-.5)*cardH;pos.push(group.position.x+x,group.position.y+y,group.position.z+.08);sizes.push(.012+Math.random()*.04);alphas.push(.5+Math.random()*.5)}const geo=new THREE.BufferGeometry();geo.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));geo.setAttribute('aSize',new THREE.Float32BufferAttribute(sizes,1));geo.setAttribute('aAlpha',new THREE.Float32BufferAttribute(alphas,1));const mat=new THREE.ShaderMaterial({transparent:true,depthWrite:false,uniforms:{uTime:{value:0}},vertexShader:`attribute float aSize;attribute float aAlpha;varying float vA;uniform float uTime;void main(){vA=aAlpha*(1.0-uTime);vec3 p=position;p.y+=uTime*(1.1+sin(position.x*5.0)*.12);p.x+=sin(uTime*5.0+position.y*3.0)*.07*uTime;vec4 mv=modelViewMatrix*vec4(p,1.0);gl_PointSize=aSize*900.0/-mv.z;gl_Position=projectionMatrix*mv;}`,fragmentShader:`varying float vA;void main(){float d=length(gl_PointCoord-.5);if(d>.5)discard;gl_FragColor=vec4(.82,.68,.43,vA*(1.0-smoothstep(.2,.5,d)));}`});const pts=new THREE.Points(geo,mat);scene.add(pts);particles.push({pts,mat,life:0});scene.remove(group);deck=deck.filter(g=>g!==group)}
 function say(t){status.textContent=t}
 function setMode(m){mode=m;$('modeBtn').classList.toggle('active',m==='gesture');$('mouseBtn').classList.toggle('active',m==='mouse');say(m==='gesture'?'手势模式 · OPEN 准备，PINCH 抓取，FIST 确认':'鼠标模式 · 移动悬停，点击抓取，双击确认')}
-$('modeBtn').onclick=()=>setMode('gesture');$('mouseBtn').onclick=()=>setMode('mouse');$('switchBtn').onclick=()=>setMode(mode==='gesture'?'mouse':'gesture');$('resetBtn').onclick=()=>{unused=cards.slice();history=[];drawnCards=[];$('historyList').innerHTML='';$('historyEmpty').style.display='block';[0,1,2].forEach(i=>{const s=$('slot'+i);s.classList.remove('filled');s.querySelector('img').removeAttribute('src');s.querySelector('.slot-empty').style.display='block';s.querySelector('b').textContent=['过去','现在','未来'][i]});$('spreadProgress').textContent='已抽取 0 / 3 张';$('help').textContent='让手掌进入画面 · OPEN 准备抽牌 · PINCH 抓取 · FIST 确认';if(current){scene.remove(current);current=null}particles.forEach(p=>scene.remove(p.pts));particles=[];locked=held=ready=false;meaning.classList.remove('show');spawnDeck();say('牌库已重置 · OPEN 开始新一轮')};
+$('questionSave').onclick=()=>{userQuestion=$('questionInput').value.trim()||'请为我解读近期的整体趋势。';say('问题已保存 · 请 OPEN 准备抽取第一张牌');$('questionPanel').style.borderColor='var(--gold)'};
+$('readingClose').onclick=()=> $('readingPanel').classList.remove('show');
+function showReading(){const labels=['过去：影响当前处境的背景','现在：此刻最需要关注的核心','未来：沿着当前趋势可能发展的方向'];const parts=drawnCards.map((d,i)=>`${labels[i]}
+${d.card.name}（${d.orientation==='upright'?'正位':'逆位'}）
+${d.orientation==='upright'?d.card.up:d.card.rev}`);$('readingBody').textContent=`你的问题：${userQuestion}\n\n${parts.join('\n\n')}\n\n综合提示：把过去当作经验，把现在当作可以采取行动的起点。未来牌呈现的是当前趋势与提醒，并非不可改变的定论。`; $('readingPanel').classList.add('show')}
+$('modeBtn').onclick=()=>setMode('gesture');$('mouseBtn').onclick=()=>setMode('mouse');$('switchBtn').onclick=()=>setMode(mode==='gesture'?'mouse':'gesture');$('resetBtn').onclick=()=>{unused=cards.slice();history=[];drawnCards=[];$('historyList').innerHTML='';$('historyEmpty').style.display='block';[0,1,2].forEach(i=>{const s=$('slot'+i);s.classList.remove('filled');s.querySelector('img').removeAttribute('src');s.querySelector('.slot-empty').style.display='block';s.querySelector('b').textContent=['过去','现在','未来'][i]});$('spreadProgress').textContent='已抽取 0 / 3 张';$('readingPanel').classList.remove('show');$('help').textContent='让手掌进入画面 · OPEN 准备抽牌 · PINCH 抓取 · FIST 确认';if(current){scene.remove(current);current=null}particles.forEach(p=>scene.remove(p.pts));particles=[];locked=held=ready=false;meaning.classList.remove('show');spawnDeck();say('牌库已重置 · OPEN 开始新一轮')};
 function pointerRay(x,y){ndc.set(x,y);raycaster.setFromCamera(ndc,camera);return raycaster.intersectObjects(deck.flatMap(g=>[g.userData.back,g.userData.front]),false)}
 function grabAt(x,y){if(!ready||current||locked)return;const hits=pointerRay(x,y);if(hits.length){drawCandidate()}}
 renderer.domElement.addEventListener('pointermove',e=>{pointer.x=e.clientX/innerWidth*2-1;pointer.y=-(e.clientY/innerHeight)*2+1;if(mode==='mouse'&&current&&held){current.position.x=pointer.x*2.1;current.position.y=pointer.y*1.5}});
@@ -159,13 +174,14 @@ let hands=null,mpCamera=null,stream=null;
 async function startCamera(){try{if(!navigator.mediaDevices?.getUserMedia)throw Error('浏览器不支持摄像头');const video=$('video');stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user',width:640,height:480},audio:false});video.srcObject=stream;$('cameraBox').style.display='block';if(!window.Hands||!window.Camera)throw Error('MediaPipe 脚本加载失败');hands=new Hands({locateFile:f=>`https://cdn.jsdelivr.net/npm/@mediapipe/hands/${f}`});hands.setOptions({maxNumHands:1,modelComplexity:1,minDetectionConfidence:.65,minTrackingConfidence:.6});hands.onResults(res=>{if(mode!=='gesture')return;const lm=res.multiHandLandmarks?.[0];if(lm){const g=gesture(lm);handleGesture(g,lm)}else{gestureCandidate='';lastGesture='NEUTRAL'}});mpCamera=new Camera(video,{onFrame:async()=>{if(hands)await hands.send({image:video})},width:640,height:480});mpCamera.start();$('cameraBtn').textContent='关闭摄像头';say('摄像头已开启 · 请让手掌进入画面')}catch(e){console.warn(e);setMode('mouse');say('摄像头权限或加载失败，已自动切换鼠标模式');toast.style.display='block';toast.textContent='摄像头无法启动，已切换为鼠标模式。请允许浏览器摄像头权限，或直接使用鼠标。';setTimeout(()=>toast.style.display='none',3500)}}
 function stopCamera(){if(mpCamera?.stop)mpCamera.stop();if(stream)stream.getTracks().forEach(t=>t.stop());stream=null;hands=null;$('cameraBox').style.display='none';$('cameraBtn').textContent='开启摄像头'}
 $('cameraBtn').onclick=()=>stream?stopCamera():startCamera();
-function animate(){requestAnimationFrame(animate);const t=performance.now()*.001;stars.rotation.y=Math.sin(t*.08)*.08;stars.rotation.x=Math.sin(t*.06)*.025;deck.forEach((g,i)=>{if(g!==current){g.position.y=g.userData.baseY+Math.sin(t*1.2+i*.2)*.012}});if(current&&held){
+function animate(){requestAnimationFrame(animate);const t=performance.now()*.001;stars.rotation.y=Math.sin(t*.08)*.08;stars.rotation.x=Math.sin(t*.06)*.025;deck.forEach((g,i)=>{if(g!==current){const phase=t*1.25+i*.19;g.position.y=g.userData.baseY+Math.sin(phase)*.045;g.rotation.z=Math.sin(phase*.7+i*.03)*.018;g.rotation.x=Math.sin(phase*.55)*.012;g.position.x=(i%9-4)*.105+Math.sin(phase*.45)*.018;}});if(current&&held){
  const p=Math.min(1,(performance.now()-revealStarted)/850),ease=1-Math.pow(1-p,3);
  const from=current.userData.revealFrom;
  current.position.set(from.x*(1-ease),from.y*(1-ease),from.z*(1-ease)+2.2*ease);
  current.scale.setScalar(.9+.28*ease);
- current.rotation.y=Math.PI*(1-ease)+Math.sin(t*1.1)*.045;
- current.position.y+=Math.sin(t*1.8)*.035;
+ current.rotation.y=Math.PI*(1-ease)+Math.sin(t*1.35)*.12;
+ current.rotation.x=Math.sin(t*.9)*.045;current.rotation.z=(orientation==='reversed'?Math.PI:0)+Math.sin(t*1.1)*.025;
+ current.position.x+=Math.sin(t*1.15)*.035;current.position.y+=Math.sin(t*1.8)*.075;
 }particles.forEach((p,i)=>{p.life+=.012;p.mat.uniforms.uTime.value=Math.min(1,p.life);if(p.life>=1){scene.remove(p.pts);p.pts.geometry.dispose();p.mat.dispose();particles.splice(i,1)}});renderer.render(scene,camera)}
 animate();addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight)});
 say('等待你的手势 · OPEN 张开手掌开始'); 
