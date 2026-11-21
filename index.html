@@ -23,7 +23,17 @@ h3{margin:0 0 10px;color:var(--gold2);font-weight:normal;font-size:14px;letter-s
 #cardName{font-size:20px;color:var(--gold2);margin:4px 0}
 #orientation{font:11px Arial,sans-serif;color:var(--gold);letter-spacing:.18em}
 #meaningText{font:13px/1.75 Arial,sans-serif;color:#d0c9b9;margin-top:12px;white-space:pre-line}
-#history{right:22px;bottom:20px;width:250px;max-height:34vh;overflow:auto;padding:14px}
+#history{right:22px;bottom:20px;width:330px;max-height:38vh;overflow:auto;padding:14px}
+#spreadSlots{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin:10px 0 12px}
+.spread-slot{min-width:0;text-align:center;color:var(--muted);font:10px Arial,sans-serif}
+.spread-slot .slot-frame{height:112px;border:1px dashed #b99b5b77;border-radius:8px;display:flex;align-items:center;justify-content:center;overflow:hidden;background:#080d18aa;margin-bottom:5px}
+.spread-slot img{height:100%;width:100%;object-fit:cover;display:none}
+.spread-slot.filled .slot-frame{border:1px solid var(--gold);box-shadow:0 0 16px #d7b56d33}
+.spread-slot.filled img{display:block}
+.spread-slot .slot-empty{font:20px Georgia;color:#b99b5b88}
+.spread-slot.filled .slot-empty{display:none}
+.spread-slot b{display:block;color:var(--gold2);font-weight:normal;font-size:10px}
+#spreadProgress{font:10px Arial,sans-serif;color:var(--gold);margin:2px 0 8px}
 #history ol{margin:8px 0 0;padding-left:22px;color:#d7cfbd;font:12px/1.8 Arial,sans-serif}
 #history li span{color:var(--gold)}
 #status{position:fixed;z-index:3;left:50%;bottom:26px;transform:translateX(-50%);padding:10px 17px;border-radius:30px;background:#101522cc;border:1px solid var(--line);color:var(--gold2);font:12px Arial,sans-serif;letter-spacing:.08em;white-space:nowrap}
@@ -34,7 +44,7 @@ h3{margin:0 0 10px;color:var(--gold2);font-weight:normal;font-size:14px;letter-s
 #help{position:fixed;z-index:3;left:50%;top:76px;transform:translateX(-50%);font:11px Arial,sans-serif;color:#bdb39f;letter-spacing:.06em;text-align:center}
 #deckCount{color:var(--gold);font:11px Arial,sans-serif;margin-top:6px}
 #toast{position:fixed;z-index:8;left:50%;top:50%;transform:translate(-50%,-50%);background:#111827ee;border:1px solid var(--gold);padding:15px 22px;border-radius:12px;display:none;text-align:center;max-width:85vw;font:13px Arial;box-shadow:0 10px 50px #0009}
-@media(max-width:700px){#guide{top:68px;left:10px;width:185px;padding:11px}.step{font-size:10px;margin:7px 0}#meaning{right:10px;top:auto;bottom:160px;width:205px;padding:12px}#history{right:10px;bottom:10px;width:190px;max-height:23vh}#controls{left:10px;bottom:132px;max-width:180px}#status{bottom:12px;font-size:10px}#help{top:12px;width:90%;font-size:9px}#cameraBox{left:10px;bottom:10px;width:110px;height:82px}}
+@media(max-width:700px){#guide{top:68px;left:10px;width:185px;padding:11px}.step{font-size:10px;margin:7px 0}#meaning{right:10px;top:auto;bottom:160px;width:205px;padding:12px}#history{right:10px;bottom:10px;width:min(300px,calc(100vw - 20px));max-height:34vh}.spread-slot .slot-frame{height:86px}#controls{left:10px;bottom:132px;max-width:180px}#status{bottom:12px;font-size:10px}#help{top:12px;width:90%;font-size:9px}#cameraBox{left:10px;bottom:10px;width:110px;height:82px}}
 </style>
 </head>
 <body>
@@ -49,7 +59,14 @@ h3{margin:0 0 10px;color:var(--gold2);font-weight:normal;font-size:14px;letter-s
 <div class="step"><b>MOUSE</b><span>鼠标移动、点击抓取，双击确认</span></div>
 <div id="deckCount">剩余牌数：78</div></div>
 <div class="panel" id="meaning"><div id="orientation">UPRIGHT</div><div id="cardName">The Fool</div><div id="meaningText"></div></div>
-<div class="panel" id="history"><h3>抽牌记录 / JOURNAL</h3><ol id="historyList"></ol><div id="historyEmpty" style="color:#938a79;font:11px Arial">尚未抽取牌卡</div></div>
+<div class="panel" id="history"><h3>三张牌阵 / THREE-CARD SPREAD</h3>
+<div id="spreadProgress">已抽取 0 / 3 张</div>
+<div id="spreadSlots">
+<div class="spread-slot" id="slot0"><div class="slot-frame"><span class="slot-empty">Ⅰ</span><img alt="第一张牌"></div><b>过去</b></div>
+<div class="spread-slot" id="slot1"><div class="slot-frame"><span class="slot-empty">Ⅱ</span><img alt="第二张牌"></div><b>现在</b></div>
+<div class="spread-slot" id="slot2"><div class="slot-frame"><span class="slot-empty">Ⅲ</span><img alt="第三张牌"></div><b>未来</b></div>
+</div>
+<h3 style="font-size:12px;margin-top:8px">抽牌记录 / JOURNAL</h3><ol id="historyList"></ol><div id="historyEmpty" style="color:#938a79;font:11px Arial">尚未抽取牌卡</div></div>
 <div id="controls"><button id="cameraBtn">开启摄像头</button><button id="switchBtn">切换手势 / 鼠标</button></div>
 <div id="cameraBox"><video id="video" autoplay playsinline muted></video><div id="cameraLabel">HAND TRACKING</div></div>
 <div id="status">等待你的手势 · AWAITING YOUR HAND</div><div id="toast"></div>
@@ -68,29 +85,64 @@ const suits=['Wands','Cups','Swords','Pentacles'],majors=['The Fool','The Magici
 const majorMean=[['新的开始、自由、信任直觉与勇敢探索。','鲁莽、准备不足，或对风险缺乏觉察。'],['行动力、创造力与资源整合。','技巧未发挥、操控或缺乏方向。'],['直觉、潜意识与尚未揭晓的信息。','忽略直觉、秘密被遮蔽或内在失衡。'],['丰盛、创造、滋养与关系中的温柔。','过度付出、停滞或创造力受阻。'],['秩序、责任、边界与稳定领导。','控制欲、僵化或权威失衡。'],['传统、学习、信念与导师指引。','打破旧框架、质疑规则或信念冲突。'],['连接、选择、价值观一致与亲密关系。','关系失衡、犹豫或价值观冲突。'],['意志、推进、胜利与自我掌舵。','方向混乱、冲动或失去控制。'],['温柔的勇气、耐心与内在力量。','自我怀疑、压抑或情绪失控。'],['独处、沉思、寻找内在答案。','孤立、逃避或拒绝倾听自己。'],['转机、周期变化与命运之轮转动。','抗拒变化、时机延迟或重复旧循环。'],['公平、真相、责任与因果。','偏见、逃避责任或判断失准。'],['暂停、换角度观察与主动放下。','无谓牺牲、拖延或抗拒转变。'],['结束旧阶段、蜕变与重生。','抗拒结束、停滞或无法释怀。'],['平衡、疗愈、整合与适度。','失衡、过度或缺乏耐心。'],['执念、束缚、诱惑与看清阴影。','挣脱依赖、重获自主或面对恐惧。'],['突然的改变、旧结构崩塌与觉醒。','延迟改变、压抑危机或害怕重建。'],['希望、灵感、疗愈与重新相信。','失望、信心不足或忽视希望。'],['梦境、未知、直觉与迷雾中的探索。','迷雾散去、焦虑缓解或真相浮现。'],['喜悦、成功、活力与清晰。','快乐延迟、过度乐观或精力不足。'],['觉醒、召唤、复盘与新的决定。','自我批判、犹豫或不愿回应召唤。'],['圆满、整合、旅程完成与新阶段。','未完成、缺少收尾或延迟达成。']];
 const rankNames=['Ace','Two','Three','Four','Five','Six','Seven','Eight','Nine','Ten','Page','Knight','Queen','King'];
 const minorMeaning={Wands:['灵感、行动、热情与成长。','冲动、延迟、耗竭或缺乏方向。'],Cups:['情感、关系、直觉与内在满足。','情绪阻塞、失衡或关系误会。'],Swords:['思想、沟通、判断与挑战。','过度思虑、冲突或逃避真相。'],Pentacles:['现实、资源、工作与长期积累。','物质焦虑、计划松散或资源失衡。']};
-const cards=majors.map((name,i)=>({name,arcana:'Major Arcana',num:i,up:majorMean[i][0],rev:majorMean[i][1],img:`https://www.sacred-texts.com/tarot/pkt/img/ar${String(i).padStart(2,'0')}.jpg`}));
-suits.forEach((s,si)=>rankNames.forEach((r,ri)=>{const n=`${r} of ${s}`;cards.push({name:n,arcana:s,num:ri,up:`${minorMeaning[s][0]} ${r}提示你关注${s==='Wands'?'行动与创造':s==='Cups'?'情感与连接':s==='Swords'?'思考与表达':'现实与积累'}。`,rev:minorMeaning[s][1]+` ${r}提醒你重新调整节奏与重心。`,img:null})}));
+const cards=majors.map((name,i)=>({name,arcana:'Major Arcana',num:i,up:majorMean[i][0],rev:majorMean[i][1],img:`https://petaloverflow.github.io/tarot-api/cards/ar${String(i).padStart(2,'0')}.jpg`}));
+suits.forEach((s,si)=>rankNames.forEach((r,ri)=>{const n=`${r} of ${s}`;cards.push({name:n,arcana:s,num:ri,img:`https://petaloverflow.github.io/tarot-api/cards/${({Wands:'wa',Cups:'cu',Swords:'sw',Pentacles:'pe'})[s]}${(['ac','02','03','04','05','06','07','08','09','10','pa','kn','qu','ki'])[ri]}.jpg`,up:`${minorMeaning[s][0]} ${r}提示你关注${s==='Wands'?'行动与创造':s==='Cups'?'情感与连接':s==='Swords'?'思考与表达':'现实与积累'}。`,rev:minorMeaning[s][1]+` ${r}提醒你重新调整节奏与重心。`,img:null})}));
 /* 图片配置：优先使用每张牌的 img URL；可在此处为任意牌配置本地图片 URL。
    例如：LOCAL_CARD_IMAGES["The Fool"]="./tarot/fool.jpg";
    如果远程图源不可用，将自动显示精美文字占位卡面。 */
 const LOCAL_CARD_IMAGES={};
 const backTex=makeBackTexture();function makeBackTexture(){const c=document.createElement('canvas');c.width=512;c.height=768;const x=c.getContext('2d');x.fillStyle='#172237';x.fillRect(0,0,512,768);x.strokeStyle='#c7a768';x.lineWidth=7;x.strokeRect(24,24,464,720);x.lineWidth=2;x.strokeRect(42,42,428,684);for(let i=0;i<9;i++){x.save();x.translate(256,384);x.rotate(i*Math.PI/4);x.strokeStyle='#b99758aa';x.beginPath();x.moveTo(0,-280);x.lineTo(0,280);x.stroke();x.restore()}x.fillStyle='#d8c18a';x.font='62px Georgia';x.textAlign='center';x.fillText('✦',256,410);x.font='22px Georgia';x.fillText('ARCANA',256,470);return new THREE.CanvasTexture(c)}
-function fallbackTexture(card){const c=document.createElement('canvas');c.width=512;c.height=768;const x=c.getContext('2d');x.fillStyle='#efe3c6';x.fillRect(0,0,512,768);x.strokeStyle='#8e6e3c';x.lineWidth=13;x.strokeRect(18,18,476,732);x.strokeStyle='#b99a62';x.lineWidth=3;x.strokeRect(36,36,440,696);x.fillStyle='#2a3040';x.textAlign='center';x.font='26px Georgia';x.fillText(card.arcana.toUpperCase(),256,95);x.font='bold 43px Georgia';wrap(x,card.name,256,150,410,52);x.font='130px Georgia';x.fillStyle='#a78349';x.fillText(card.arcana==='Major Arcana'?'✦':'☼',256,440);x.font='20px Georgia';x.fillStyle='#34394a';x.fillText('THE QUIET ORACLE',256,675);return new THREE.CanvasTexture(c)}
+function fallbackTexture(card){const c=document.createElement('canvas');c.width=512;c.height=768;const x=c.getContext('2d');x.fillStyle='#efe3c6';x.fillRect(0,0,512,768);x.strokeStyle='#8e6e3c';x.lineWidth=13;x.strokeRect(18,18,476,732);x.strokeStyle='#b99a62';x.lineWidth=3;x.strokeRect(36,36,440,696);x.fillStyle='#2a3040';x.textAlign='center';x.font='26px Georgia';x.fillText(card.arcana.toUpperCase(),256,95);x.font='bold 43px Georgia';wrap(x,card.name,256,150,410,52);x.font='130px Georgia';x.fillStyle='#a78349';const sigils={'The Fool':'☼','The Magician':'✧','The High Priestess':'☾','The Empress':'♛','The Emperor':'♜','The Lovers':'♡','The Chariot':'⚔','Strength':'♌','The Hermit':'✦','The Star':'☆','The Moon':'☾','The Sun':'☼','The World':'◎'};x.fillText(sigils[card.name]||({'Wands':'♨','Cups':'♧','Swords':'⚔','Pentacles':'✥'}[card.arcana]||'✦'),256,440);x.font='20px Georgia';x.fillStyle='#34394a';x.fillText('THE QUIET ORACLE',256,675);return new THREE.CanvasTexture(c)}
 function wrap(ctx,t,cx,y,w,h){let words=t.split(' '),line='';for(const word of words){let test=line?line+' '+word:word;if(ctx.measureText(test).width>w){ctx.fillText(line,cx,y);line=word;y+=h}else line=test}ctx.fillText(line,cx,y)}
 const loader=new THREE.TextureLoader();loader.crossOrigin='anonymous';const textureCache=new Map();
 function frontTexture(card){const url=LOCAL_CARD_IMAGES[card.name]||card.img;if(!url)return Promise.resolve(fallbackTexture(card));if(textureCache.has(url))return textureCache.get(url);const p=new Promise(resolve=>loader.load(url,t=>{t.colorSpace=THREE.SRGBColorSpace;resolve(t)},undefined,()=>resolve(fallbackTexture(card))));textureCache.set(url,p);return p}
-const cardW=2.1,cardH=3.25;let deck=[],current=null,mode='gesture',ready=false,held=false,selected=false,locked=false,orientation='upright',unused=cards.slice(),history=[],lastGesture='NEUTRAL',gestureCandidate='',gestureSince=0,lastTrigger=0,handPoint={x:0,y:0},pointer={x:0,y:0},mouseDown=false,particles=[];
+const cardW=2.1,cardH=3.25;let deck=[],current=null,mode='gesture',ready=false,held=false,selected=false,locked=false,orientation='upright',unused=cards.slice(),history=[],drawnCards=[],revealStarted=0,lastGesture='NEUTRAL',gestureCandidate='',gestureSince=0,lastTrigger=0,handPoint={x:0,y:0},pointer={x:0,y:0},mouseDown=false,particles=[];
 const raycaster=new THREE.Raycaster(),ndc=new THREE.Vector2();let hoverCard=null;
 function makeCard(card){const group=new THREE.Group();const back=new THREE.Mesh(new THREE.PlaneGeometry(cardW,cardH),new THREE.MeshStandardMaterial({map:backTex,roughness:.65}));group.add(back);const front=new THREE.Mesh(new THREE.PlaneGeometry(cardW,cardH),new THREE.MeshStandardMaterial({map:fallbackTexture(card),roughness:.65,side:THREE.DoubleSide}));front.position.z=.012;front.visible=false;group.add(front);group.userData={card,back,front,baseY:0};scene.add(group);frontTexture(card).then(t=>{if(front.material.map!==t){front.material.map=t;front.material.needsUpdate=true}});return group}
 function spawnDeck(){deck.forEach(g=>scene.remove(g));deck=[];unused.forEach((c,i)=>{const g=makeCard(c);g.position.set((i%9-4)*.105,Math.floor(i/9)*.012,-.12-Math.floor(i/9)*.018);g.rotation.z=(Math.random()-.5)*.025;g.userData.baseY=g.position.y;deck.push(g)});$('deckCount').textContent='剩余牌数：'+unused.length}
 spawnDeck();
-function drawCandidate(){if(current||locked||!ready)return;const g=deck[deck.length-1];if(!g){say('牌库已空，请重置牌库');return}current=g;const card=g.userData.card;orientation=Math.random()<.5?'reversed':'upright';g.userData.orientation=orientation;g.userData.front.visible=true;g.userData.back.visible=false;g.position.set(0,0,2.2);g.rotation.set(0,0,orientation==='reversed'?Math.PI:0);g.scale.set(1.18,1.18,1);held=true;selected=false;say('已抓取：将手势切换为 FIST 确认抽牌');showMeaning(card,false)}
+function drawCandidate(){
+ if(current||locked||!ready)return;
+ if(drawnCards.length>=3){say('三张牌已抽完 · 请重置牌库开始新一轮');return}
+ const g=deck[deck.length-1];if(!g){say('牌库已空，请重置牌库');return}
+ current=g;const card=g.userData.card;orientation=Math.random()<.5?'reversed':'upright';g.userData.orientation=orientation;
+ g.userData.front.visible=true;g.userData.back.visible=false;
+ g.userData.revealFrom=g.position.clone();g.userData.revealScale=g.scale.x;g.userData.revealRotation=g.rotation.clone();
+ g.position.set(g.userData.revealFrom.x,g.userData.revealFrom.y,g.userData.revealFrom.z);
+ g.rotation.set(0,Math.PI,orientation==='reversed'?Math.PI:0);g.scale.set(.9,.9,1);
+ revealStarted=performance.now();held=true;selected=false;
+ say('卡牌正在显现 · PINCH 可轻微调整，FIST 确认');showMeaning(card,false)
+}
 function showMeaning(card,final){$('orientation').textContent=orientation==='upright'?'UPRIGHT · 正位':'REVERSED · 逆位';$('cardName').textContent=card.name;$('meaningText').textContent=orientation==='upright'?card.up:card.rev;meaning.classList.add('show')}
-function confirmDraw(){if(!current||locked)return;locked=true;held=false;const card=current.userData.card;history.unshift({name:card.name,orientation});const li=document.createElement('li');li.innerHTML=`<span>${card.name}</span> · ${orientation==='upright'?'正位':'逆位'}`;$('historyList').prepend(li);$('historyEmpty').style.display='none';const idx=unused.findIndex(c=>c.name===card.name);if(idx>=0)unused.splice(idx,1);$('deckCount').textContent='剩余牌数：'+unused.length;makeAsh(current);current=null;meaning.classList.add('show');say('牌已确认 · 灰烬正在飘散');setTimeout(()=>{locked=false;ready=false;meaning.classList.remove('show');say('下一张已准备 · 再次张开手掌 OPEN')},2600)}
+function confirmDraw(){
+ if(!current||locked)return;
+ locked=true;held=false;
+ const group=current,card=group.userData.card;
+ history.unshift({name:card.name,orientation});
+ const li=document.createElement('li');li.innerHTML=`<span>${card.name}</span> · ${orientation==='upright'?'正位':'逆位'}`;$('historyList').prepend(li);
+ $('historyEmpty').style.display='none';
+ const idx=unused.findIndex(c=>c.name===card.name);if(idx>=0)unused.splice(idx,1);
+ drawnCards.push({card,orientation});
+ const slot=$('slot'+(drawnCards.length-1));slot.classList.add('filled');
+ const img=slot.querySelector('img');img.src=LOCAL_CARD_IMAGES[card.name]||card.img||'';
+ img.onerror=()=>{img.style.display='none';slot.querySelector('.slot-empty').style.display='block'};
+ slot.querySelector('b').textContent=['过去','现在','未来'][drawnCards.length-1]+' · '+(orientation==='upright'?'正位':'逆位');
+ $('spreadProgress').textContent=`已抽取 ${drawnCards.length} / 3 张`;
+ $('deckCount').textContent='剩余牌数：'+unused.length;
+ makeAsh(group);current=null;meaning.classList.add('show');
+ if(drawnCards.length<3){
+   say(`第 ${drawnCards.length} 张已确认 · 张开手掌 OPEN，继续抽第 ${drawnCards.length+1} 张`);
+   setTimeout(()=>{locked=false;ready=false;},700);
+ }else{
+   say('三张牌阵完成 · 过去、现在与未来已揭示');
+   $('help').textContent='三张牌已集齐 · 可查看右下角牌阵与各张牌义';
+   setTimeout(()=>{locked=false;ready=false;},700);
+ }
+}
 function makeAsh(group){const pos=[],sizes=[],alphas=[];const count=1300;for(let i=0;i<count;i++){const x=(Math.random()-.5)*cardW,y=(Math.random()-.5)*cardH;pos.push(group.position.x+x,group.position.y+y,group.position.z+.08);sizes.push(.012+Math.random()*.04);alphas.push(.5+Math.random()*.5)}const geo=new THREE.BufferGeometry();geo.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));geo.setAttribute('aSize',new THREE.Float32BufferAttribute(sizes,1));geo.setAttribute('aAlpha',new THREE.Float32BufferAttribute(alphas,1));const mat=new THREE.ShaderMaterial({transparent:true,depthWrite:false,uniforms:{uTime:{value:0}},vertexShader:`attribute float aSize;attribute float aAlpha;varying float vA;uniform float uTime;void main(){vA=aAlpha*(1.0-uTime);vec3 p=position;p.y+=uTime*(1.1+sin(position.x*5.0)*.12);p.x+=sin(uTime*5.0+position.y*3.0)*.07*uTime;vec4 mv=modelViewMatrix*vec4(p,1.0);gl_PointSize=aSize*900.0/-mv.z;gl_Position=projectionMatrix*mv;}`,fragmentShader:`varying float vA;void main(){float d=length(gl_PointCoord-.5);if(d>.5)discard;gl_FragColor=vec4(.82,.68,.43,vA*(1.0-smoothstep(.2,.5,d)));}`});const pts=new THREE.Points(geo,mat);scene.add(pts);particles.push({pts,mat,life:0});scene.remove(group);deck=deck.filter(g=>g!==group)}
 function say(t){status.textContent=t}
 function setMode(m){mode=m;$('modeBtn').classList.toggle('active',m==='gesture');$('mouseBtn').classList.toggle('active',m==='mouse');say(m==='gesture'?'手势模式 · OPEN 准备，PINCH 抓取，FIST 确认':'鼠标模式 · 移动悬停，点击抓取，双击确认')}
-$('modeBtn').onclick=()=>setMode('gesture');$('mouseBtn').onclick=()=>setMode('mouse');$('switchBtn').onclick=()=>setMode(mode==='gesture'?'mouse':'gesture');$('resetBtn').onclick=()=>{unused=cards.slice();history=[];$('historyList').innerHTML='';$('historyEmpty').style.display='block';if(current){scene.remove(current);current=null}particles.forEach(p=>scene.remove(p.pts));particles=[];locked=held=ready=false;meaning.classList.remove('show');spawnDeck();say('牌库已重置 · OPEN 开始')};
+$('modeBtn').onclick=()=>setMode('gesture');$('mouseBtn').onclick=()=>setMode('mouse');$('switchBtn').onclick=()=>setMode(mode==='gesture'?'mouse':'gesture');$('resetBtn').onclick=()=>{unused=cards.slice();history=[];drawnCards=[];$('historyList').innerHTML='';$('historyEmpty').style.display='block';[0,1,2].forEach(i=>{const s=$('slot'+i);s.classList.remove('filled');s.querySelector('img').removeAttribute('src');s.querySelector('.slot-empty').style.display='block';s.querySelector('b').textContent=['过去','现在','未来'][i]});$('spreadProgress').textContent='已抽取 0 / 3 张';$('help').textContent='让手掌进入画面 · OPEN 准备抽牌 · PINCH 抓取 · FIST 确认';if(current){scene.remove(current);current=null}particles.forEach(p=>scene.remove(p.pts));particles=[];locked=held=ready=false;meaning.classList.remove('show');spawnDeck();say('牌库已重置 · OPEN 开始新一轮')};
 function pointerRay(x,y){ndc.set(x,y);raycaster.setFromCamera(ndc,camera);return raycaster.intersectObjects(deck.flatMap(g=>[g.userData.back,g.userData.front]),false)}
 function grabAt(x,y){if(!ready||current||locked)return;const hits=pointerRay(x,y);if(hits.length){drawCandidate()}}
 renderer.domElement.addEventListener('pointermove',e=>{pointer.x=e.clientX/innerWidth*2-1;pointer.y=-(e.clientY/innerHeight)*2+1;if(mode==='mouse'&&current&&held){current.position.x=pointer.x*2.1;current.position.y=pointer.y*1.5}});
@@ -107,7 +159,14 @@ let hands=null,mpCamera=null,stream=null;
 async function startCamera(){try{if(!navigator.mediaDevices?.getUserMedia)throw Error('浏览器不支持摄像头');const video=$('video');stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user',width:640,height:480},audio:false});video.srcObject=stream;$('cameraBox').style.display='block';if(!window.Hands||!window.Camera)throw Error('MediaPipe 脚本加载失败');hands=new Hands({locateFile:f=>`https://cdn.jsdelivr.net/npm/@mediapipe/hands/${f}`});hands.setOptions({maxNumHands:1,modelComplexity:1,minDetectionConfidence:.65,minTrackingConfidence:.6});hands.onResults(res=>{if(mode!=='gesture')return;const lm=res.multiHandLandmarks?.[0];if(lm){const g=gesture(lm);handleGesture(g,lm)}else{gestureCandidate='';lastGesture='NEUTRAL'}});mpCamera=new Camera(video,{onFrame:async()=>{if(hands)await hands.send({image:video})},width:640,height:480});mpCamera.start();$('cameraBtn').textContent='关闭摄像头';say('摄像头已开启 · 请让手掌进入画面')}catch(e){console.warn(e);setMode('mouse');say('摄像头权限或加载失败，已自动切换鼠标模式');toast.style.display='block';toast.textContent='摄像头无法启动，已切换为鼠标模式。请允许浏览器摄像头权限，或直接使用鼠标。';setTimeout(()=>toast.style.display='none',3500)}}
 function stopCamera(){if(mpCamera?.stop)mpCamera.stop();if(stream)stream.getTracks().forEach(t=>t.stop());stream=null;hands=null;$('cameraBox').style.display='none';$('cameraBtn').textContent='开启摄像头'}
 $('cameraBtn').onclick=()=>stream?stopCamera():startCamera();
-function animate(){requestAnimationFrame(animate);const t=performance.now()*.001;stars.rotation.y=Math.sin(t*.08)*.08;stars.rotation.x=Math.sin(t*.06)*.025;deck.forEach((g,i)=>{if(g!==current){g.position.y=g.userData.baseY+Math.sin(t*1.2+i*.2)*.012}});if(current&&held&&mode==='gesture'){current.rotation.y=Math.sin(t*.5)*.04}particles.forEach((p,i)=>{p.life+=.012;p.mat.uniforms.uTime.value=Math.min(1,p.life);if(p.life>=1){scene.remove(p.pts);p.pts.geometry.dispose();p.mat.dispose();particles.splice(i,1)}});renderer.render(scene,camera)}
+function animate(){requestAnimationFrame(animate);const t=performance.now()*.001;stars.rotation.y=Math.sin(t*.08)*.08;stars.rotation.x=Math.sin(t*.06)*.025;deck.forEach((g,i)=>{if(g!==current){g.position.y=g.userData.baseY+Math.sin(t*1.2+i*.2)*.012}});if(current&&held){
+ const p=Math.min(1,(performance.now()-revealStarted)/850),ease=1-Math.pow(1-p,3);
+ const from=current.userData.revealFrom;
+ current.position.set(from.x*(1-ease),from.y*(1-ease),from.z*(1-ease)+2.2*ease);
+ current.scale.setScalar(.9+.28*ease);
+ current.rotation.y=Math.PI*(1-ease)+Math.sin(t*1.1)*.045;
+ current.position.y+=Math.sin(t*1.8)*.035;
+}particles.forEach((p,i)=>{p.life+=.012;p.mat.uniforms.uTime.value=Math.min(1,p.life);if(p.life>=1){scene.remove(p.pts);p.pts.geometry.dispose();p.mat.dispose();particles.splice(i,1)}});renderer.render(scene,camera)}
 animate();addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight)});
 say('等待你的手势 · OPEN 张开手掌开始'); 
 })();
